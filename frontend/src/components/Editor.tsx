@@ -3,17 +3,18 @@ import * as monaco from "monaco-editor";
 
 interface MonacoEditorProps {
   onChange: (content: string) => void; // Define the type for the onChange prop
+  language: string; // Language prop for setting editor language (e.g. JavaScript, HTML, etc.)
 }
 
-const MonacoEditor: React.FC<MonacoEditorProps> = ({ onChange }) => {
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null); // Use type for the editor
-  const containerRef = useRef<HTMLDivElement | null>(null); // Use type for the container
+const MonacoEditor: React.FC<MonacoEditorProps> = ({ onChange, language }) => {
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null); // Type for Monaco editor instance
+  const containerRef = useRef<HTMLDivElement | null>(null); // Type for the container DOM element
 
   useEffect(() => {
     // Set the Monaco Editor theme to VSCode Dark
     monaco.editor.defineTheme("vs-dark", {
-      base: "vs-dark", // can also be "vs", "hc-black"
-      inherit: true, // whether to inherit from base theme
+      base: "vs-dark", // Can also be "vs" or "hc-black"
+      inherit: true, // Whether to inherit from base theme
       rules: [],
       colors: {
         "editor.foreground": "#ffffff",
@@ -27,31 +28,29 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({ onChange }) => {
     });
 
     if (containerRef.current) {
-      // Create the Monaco editor
+      // Create the Monaco editor instance
       const editor = monaco.editor.create(containerRef.current, {
         value: "",
-        language: "javascript", // Set the default language
-        theme: "vs-dark", // Set the theme to VSCode dark
+        language: language, // Use the language prop to enable IntelliSense
+        theme: "vs-dark", // Apply VSCode dark theme
         automaticLayout: true,
       });
 
-      // Handle change events
+      // Handle content change events
       editor.onDidChangeModelContent(() => {
         const code = editor.getValue();
-        console.log(code); // Log the code to console
-        if (onChange) {
-          onChange(code); // Call the onChange prop if provided
-        }
+        console.log(code); // Log the current code content
+        onChange(code); // Call the onChange prop with updated content
       });
 
       editorRef.current = editor;
 
-      // Clean up editor on component unmount
+      // Clean up the editor on component unmount
       return () => {
         editor.dispose();
       };
     }
-  }, [onChange]);
+  }, [onChange, language]); // Re-run effect if onChange or language changes
 
   return <div ref={containerRef} style={{ height: "100%", width: "100%" }} />;
 };
