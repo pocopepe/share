@@ -1,4 +1,4 @@
-name = "backend"
+name = "share-backend"
 main = "src/index.ts"
 compatibility_date = "2024-10-08"
 compatibility_flags = [ "nodejs_compat" ]
@@ -10,9 +10,9 @@ compatibility_flags = [ "nodejs_compat" ]
 # binding = "MY_KV_NAMESPACE"
 # id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-# [[r2_buckets]]
-# binding = "MY_BUCKET"
-# bucket_name = "my-bucket"
+[[r2_buckets]]
+binding = "bucket"
+bucket_name = "share"
 
 # [[d1_databases]]
 # binding = "DB"
@@ -22,6 +22,6 @@ compatibility_flags = [ "nodejs_compat" ]
 # [ai]
 # binding = "AI"
 
-# [observability]
-# enabled = true
-# head_sampling_rate = 1
+[observability]
+ enabled = true
+ head_sampling_rate = 1
