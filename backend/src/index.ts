@@ -1,98 +1,66 @@
 import { Hono } from 'hono';
-import { IncomingForm, Files, Fields, File  } from 'formidable';
 
 const app = new Hono();
 
-
-// Route for the root
 app.get('/', (c) => c.text('Hello Cloudflare Workers!'));
 
-app.get('/myfiles', async (c)=>{
-  const bucket = c.env.bucket; // Reference the bucket binding defined in wrangler.toml
-  try {
-    // Ensure the request contains multipart form data
-    if (!c.req.headers.get('content-type')?.includes('multipart/form-data')) {
-      return c.text('Invalid content type', 400);
-    }
-
-    // Parse form data
-    const formData = await c.req.formData();
-    const file = formData.get('file') as File; // Assuming file field is named 'file'
-
-    if (!file) {
-      return c.text('No file uploaded', 400);
-    }
-
-    // Prepare file contents and metadata
-    const fileContent = await file.arrayBuffer();
-    const contentType = file.type || 'application/octet-stream';
-
-    // Upload the file to R2 using bucket.put
-    await bucket.put(file.name, fileContent, {
-      httpMetadata: {
-        contentType: contentType, 
-      },
-    });
-
-    return c.text(`File uploaded successfully: ${file.name}`);
-  } catch (error) {
-    console.error('Error uploading file:', error);
-    return c.text('Failed to upload file', 500);
-  }});
-
-
-
-// Route for codeshare with filename parameter
 app.post('/codeshare/:filename', async (c) => {
-  const filename = c.req.param('filename'); // Get the 'filename' parameter from the request
-
-  // Log the request details for debugging
+  const filename = c.req.param('filename');
   console.log('Received request for filename:', filename);
 
-  // Define your R2 bucket
-  const bucket = c.env.MY_BUCKET; // Ensure this matches your binding in wrangler.toml
+  const bucket = (c.env as { MY_BUCKET: any }).MY_BUCKET;
 
   if (!bucket) {
-    console.error('Bucket is undefined. Check your wrangler.toml for binding.');
+    console.error('Bucket is undefined.');
     return c.text('Internal server error: Bucket not found.', 500);
   }
 
   try {
-    // Log the headers for debugging
-    console.log('Request headers:', c.req.headers);
+    const contentType = c.req.header('Content-Type');
+    console.log('Content-Type:', contentType);
 
-    // Check Content-Type
-    const contentType = c.req.headers.get('Content-Type');
     let fileContent = '';
+    let fileExtension = '';
+    let r2ContentType = '';
 
-    // Handle JSON body
     if (contentType === 'application/json') {
-      const body = await c.req.json(); // Assuming the body is sent as JSON
-      fileContent = body.content || ''; // Extract 'content' from the body
-      console.log('Received JSON content:', fileContent);
+      const body = await c.req.json();
+      fileContent = body.content || '';
+      fileExtension = 'json';
+      r2ContentType = 'application/json';
     } else if (contentType === 'text/plain') {
-      // Handle plain text body
-      fileContent = await c.req.text(); // Fallback to reading plain text
-      console.log('Received plain text content:', fileContent);
+      fileContent = await c.req.text();
+      fileExtension = 'txt';
+      r2ContentType = 'text/plain';
+    } else if (contentType === 'application/javascript') {
+      fileContent = await c.req.text();
+      fileExtension = 'js';
+      r2ContentType = 'application/javascript';
+    } else if (contentType === 'text/html') {
+      fileContent = await c.req.text();
+      fileExtension = 'html';
+      r2ContentType = 'text/html';
+    } else if (contentType === 'application/x-python') {
+      fileContent = await c.req.text();
+      fileExtension = 'py';
+      r2ContentType = 'application/x-python';
     } else {
-      return c.text('Unsupported Content-Type. Please send JSON or plain text.', 400);
+      return c.text('Unsupported Content-Type. Please send JSON, plain text, JavaScript, HTML, or Python.', 400);
     }
 
-    const objectKey = `${filename}.txt`; // Name the file with .txt extension
-
-    // Log the content being saved for debugging
+    const objectKey = `${filename}.${fileExtension}`;
     console.log('Saving content:', fileContent);
 
     await bucket.put(objectKey, fileContent, {
       httpMetadata: {
-        contentType: 'text/plain', // Set the content type to text/plain
+        contentType: r2ContentType,
       },
     });
-    
-    return c.text(`File ${objectKey} created successfully with content.`); // Return success message
+
+    return c.text(`File ${objectKey} created successfully with content.`);
   } catch (error) {
     console.error('Error creating file:', error);
-    return c.text(`Error creating file: ${error.message}`, 500); // Return detailed error message
+    return c.text(`Error creating file`, 500);
   }
 });
 

@@ -11,7 +11,7 @@ compatibility_flags = [ "nodejs_compat" ]
 # id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 [[r2_buckets]]
-binding = "bucket"
+binding = "MY_BUCKET"
 bucket_name = "share"
 
 # [[d1_databases]]
