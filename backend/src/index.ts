@@ -4,6 +4,40 @@ const app = new Hono();
 
 app.get('/', (c) => c.text('Hello Cloudflare Workers!'));
 
+app.post('/upload', async (c) => {
+  const bucket = (c.env as { MY_BUCKET: any }).MY_BUCKET;
+
+  if (!bucket) {
+    console.error('Bucket is undefined. Check your wrangler.toml for binding.');
+    return c.text('Internal server error: Bucket not found.', 500);
+  }
+
+  try {
+    const body = await c.req.parseBody();
+    const metaData = body['file'];
+
+    if (!metaData) {
+      console.error('No file metadata found in the request body.');
+      return c.text('Bad request: No file metadata provided.', 400);
+    }
+
+    const fileContent = 'grr'; 
+
+    await bucket.put(metaData.name, fileContent, {
+      httpMetadata: {
+        contentType: metaData.type,
+      },
+    });
+
+    console.log(`File ${metaData.name} uploaded successfully.`);
+    return c.text('File uploaded successfully.');
+  } catch (error) {
+    console.error('Error during file upload:', error);
+    return c.text(`Error uploading file: ${error.message}`, 500);
+  }
+});
+
+
 app.post('/codeshare/:filename', async (c) => {
   const filename = c.req.param('filename');
   console.log('Received request for filename:', filename);
@@ -63,5 +97,34 @@ app.post('/codeshare/:filename', async (c) => {
     return c.text(`Error creating file`, 500);
   }
 });
+
+app.post('/cleanup', async (c) => {
+  const bucket = (c.env as { MY_BUCKET: any }).MY_BUCKET;
+
+  if (!bucket) {
+    console.error('Bucket is undefined.');
+    return c.text('Internal server error: Bucket not found.', 500);
+  }
+
+  try {
+    const { keys } = await bucket.list(); 
+
+    const now = new Date();
+    const objectsToDelete = keys.filter((obj: { lastModified: string }) => {
+      const lastModified = new Date(obj.lastModified);
+      return (now.getTime() - lastModified.getTime()) > 10 * 1000;     });
+
+    await Promise.all(objectsToDelete.map(async (obj: { key: string }) => {
+      await bucket.delete(obj.key);
+      console.log(`Deleted object: ${obj.key}`);
+    }));
+
+    return c.text('Cleanup completed successfully.');
+  } catch (error) {
+    console.error('Error during cleanup:', error);
+    return c.text(`Error during cleanup: ${error.message}`, 500);
+  }
+});
+
 
 export default app;
