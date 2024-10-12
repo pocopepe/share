@@ -1,19 +1,24 @@
+// src/App.tsx
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import CodeShare from './pages/CodeShare'; // Import your pages
-import Home from './pages/Home'; // Import your pages
-import MyFiles from './pages/MyFiles'; // Import your pages
+import CodeShare from './pages/CodeShare';
+import Home from './pages/Home';
+import MyFiles from './pages/MyFiles';
 import LocationBasedSaveButton from "./components/LocationBasedSave";
 import LocationBasedDropdown from "./components/LocationBasedButtons";
 import { useState } from 'react';
+import ParticlesBackground from './components/Particles'; // Import the ParticlesBackground
 
 function App() {
   const [position, setPosition] = useState("python");
 
   return (
     <Router>
-      <div className="flex flex-col h-screen bg-slate-700">
-        <nav className="bg-gray-900 shadow-md">
+      <div className="flex flex-col h-screen bg-slate-700 relative overflow-hidden">
+        {/* Particles Background */}
+        <ParticlesBackground />
+
+        <nav className="bg-gray-900 shadow-md z-10">
           <div className="flex justify-between items-center px-6 py-4">
             <h1 className="text-white text-xl font-bold">Share</h1>
             <div className="flex space-x-4">
@@ -37,7 +42,7 @@ function App() {
             </div>
           </div>
         </nav>
-        <div className="flex-grow overflow-hidden">
+        <div className="flex-grow overflow-hidden z-10"> {/* Ensure the content is on top */}
           <Routes>
             <Route path="/" element={<Navigate to="/home" />} />
             <Route path="/codeshare" element={<CodeShare someString={position} />} />
@@ -49,4 +54,5 @@ function App() {
     </Router>
   );
 }
+
 export default App;
