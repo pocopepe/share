@@ -69,8 +69,8 @@ function Home() {
             {isInstalled ? 'App Installed' : 'Install Unavailable'}
           </Button>
         )}
-        <Button className="w-full">Docs</Button>
-        <Button className="w-full">Developer Info</Button>
+        <a href='https://github.com/pocopepe/share' target='_blank'><Button className="w-full">Docs</Button></a>
+        <a href='https://github.com/pocopepe' target='_blank'><Button className="w-full">Developer Info</Button></a>
       </div>
     </div>
   );
