@@ -1,14 +1,12 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useRecoilState } from "recoil";
+import { codeLanguageAtom } from "@/recoil/code";
 
-// Define the props interface for LocationBasedDropdown
-interface LocationBasedDropdownProps {
-  position: string; // The current language position
-  setPosition: (value: string) => void; // Function to update the position
-}
 
-const LocationBasedDropdown: React.FC<LocationBasedDropdownProps> = ({ position, setPosition }) => {
+const LocationBasedDropdown: React.FC = () => {
+  const [position, setPosition]= useRecoilState(codeLanguageAtom);
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -23,9 +21,10 @@ const LocationBasedDropdown: React.FC<LocationBasedDropdownProps> = ({ position,
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 bg-gray-800 outline-black">
-        <DropdownMenuLabel className="text-white">Select the language of your Choice</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-white">Select the language of your choice</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuRadioGroup value={position} onValueChange={setPosition}>
+        <DropdownMenuRadioGroup value={position} onValueChange={(value) => setPosition(value)}>
+          {/* Ensure value strings match exactly with `position` */}
           <DropdownMenuRadioItem className="text-white" value="javascript">JavaScript</DropdownMenuRadioItem>
           <DropdownMenuRadioItem className="text-white" value="python">Python</DropdownMenuRadioItem>
           <DropdownMenuRadioItem className="text-white" value="html">HTML</DropdownMenuRadioItem>

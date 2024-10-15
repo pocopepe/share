@@ -6,7 +6,6 @@ export const codeLanguageAtom=atom<string>({
 })
 
 export const codeValueAtom = atom<string>({
-    
     key: 'codeValueAtom', 
-    default: "console.log('hello world!');",
+    default: "",
 });

@@ -13,18 +13,6 @@ const MonacoEditor: React.FC = () => {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null); 
   const containerRef = useRef<HTMLDivElement | null>(null); 
 
-  useEffect(() => {
-    if (language=="python"){
-      setValue("print('hello, world')");
-    }
-    else if (language=="javascript"){
-      setValue("console.log('hello, world')")
-    }
-    else if (language=="html"){
-      setValue("<h1>hello, world</h1>")
-    }
-}, [language]);
-
 
   useEffect(() => {
     monaco.editor.defineTheme("vs-dark", {
@@ -52,7 +40,6 @@ const MonacoEditor: React.FC = () => {
 
       editor.onDidChangeModelContent(() => {
         const code = editor.getValue();
-        console.log(code); 
         setValue(code);
       });
 
