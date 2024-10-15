@@ -6,14 +6,17 @@ import MyFiles from './pages/MyFiles'; // Import your pages
 import LocationBasedSaveButton from "./components/LocationBasedSave";
 import LocationBasedDropdown from "./components/LocationBasedButtons";
 import { useState } from 'react';
+import StarsParticles from "./components/tsparticles";
 
 function App() {
   const [position, setPosition] = useState("python");
 
   return (
     <Router>
-      <div className="flex flex-col h-screen bg-slate-700">
-        <nav className="bg-gray-900 shadow-md">
+      <div className="flex flex-col h-screen bg-slate-700 relative">
+        <StarsParticles /> 
+
+        <nav className="bg-black-900 shadow-md relative z-10">
           <div className="flex justify-between items-center px-6 py-4">
             <h1 className="text-white text-xl font-bold">Share</h1>
             <div className="flex space-x-4">
@@ -37,7 +40,7 @@ function App() {
             </div>
           </div>
         </nav>
-        <div className="flex-grow overflow-hidden">
+        <div className="flex-grow overflow-hidden relative z-10">
           <Routes>
             <Route path="/" element={<Navigate to="/home" />} />
             <Route path="/codeshare" element={<CodeShare someString={position} />} />
@@ -49,4 +52,5 @@ function App() {
     </Router>
   );
 }
+
 export default App;

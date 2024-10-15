@@ -39,14 +39,15 @@ function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-slate-700">
+    <div className="flex flex-col items-center justify-center h-screen relative z-10">
+      {/* Main Content */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth="1.5"
         stroke="currentColor"
-        className="size-20"
+        className="w-20 h-20 text-white"
       >
         <path
           strokeLinecap="round"
@@ -55,9 +56,7 @@ function Home() {
         />
       </svg>
 
-      <div className="text-white mt-4 font-bold text-2xl">
-        Share
-      </div>
+      <div className="text-white mt-4 font-bold text-2xl">Share</div>
 
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-md">
         {!isInstalled && isInstallable ? (
@@ -69,8 +68,12 @@ function Home() {
             {isInstalled ? 'App Installed' : 'Install Unavailable'}
           </Button>
         )}
-        <a href='https://github.com/pocopepe/share' target='_blank'><Button className="w-full">Docs</Button></a>
-        <a href='https://github.com/pocopepe' target='_blank'><Button className="w-full">Developer Info</Button></a>
+        <a href='https://github.com/pocopepe/share' target='_blank' rel="noopener noreferrer">
+          <Button className="w-full">Docs</Button>
+        </a>
+        <a href='https://github.com/pocopepe' target='_blank' rel="noopener noreferrer">
+          <Button className="w-full">Developer Info</Button>
+        </a>
       </div>
     </div>
   );
