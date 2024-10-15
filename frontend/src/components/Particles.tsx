@@ -1,10 +1,9 @@
 import React from 'react';
 import Particles from 'react-tsparticles';
 import { loadFull } from 'tsparticles';
-import type { Engine } from 'tsparticles-engine'; // Ensure you're importing the correct type
 
 const ParticlesBackground: React.FC = () => {
-  const particlesInit = async (main: Engine) => {
+  const particlesInit = async (main: any) => {
     await loadFull(main);
   };
 
