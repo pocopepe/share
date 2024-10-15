@@ -2,6 +2,23 @@ import { Hono } from 'hono';
 
 const app = new Hono();
 
+// CORS Middleware to add the CORS headers globally
+app.use('*', (c, next) => {
+  c.res.headers.set('Access-Control-Allow-Origin', '*'); // Set this to a specific origin if needed
+  c.res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  c.res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  c.res.headers.set('Access-Control-Expose-Headers', 'ETag');
+  return next();
+});
+
+// Handle preflight OPTIONS requests
+app.options('*', (c) => {
+  c.res.headers.set('Access-Control-Allow-Origin', '*'); // Set this to a specific origin if needed
+  c.res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  c.res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  return c.text('', 204); // No content
+});
+
 app.get('/', (c) => c.text('Hello Cloudflare Workers!'));
 
 app.post('/upload', async (c) => {
@@ -36,7 +53,6 @@ app.post('/upload', async (c) => {
     return c.text(`Error uploading file: ${error.message}`, 500);
   }
 });
-
 
 app.post('/codeshare/:filename', async (c) => {
   const filename = c.req.param('filename');
@@ -112,7 +128,8 @@ app.post('/cleanup', async (c) => {
     const now = new Date();
     const objectsToDelete = keys.filter((obj: { lastModified: string }) => {
       const lastModified = new Date(obj.lastModified);
-      return (now.getTime() - lastModified.getTime()) > 10 * 1000;     });
+      return (now.getTime() - lastModified.getTime()) > 10 * 1000;     
+    });
 
     await Promise.all(objectsToDelete.map(async (obj: { key: string }) => {
       await bucket.delete(obj.key);
@@ -125,6 +142,5 @@ app.post('/cleanup', async (c) => {
     return c.text(`Error during cleanup: ${error.message}`, 500);
   }
 });
-
 
 export default app;
