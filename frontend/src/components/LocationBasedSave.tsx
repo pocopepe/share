@@ -11,14 +11,14 @@ const LocationBasedSaveButton: React.FC = () => {
 
   // Function to handle save action
   const handleSave = () => {
-    const backend='https://share-backend.avijusanjai.workers.dev/codeshare';
+    const backend='https://share-backend.avijusanjai.workers.dev/codeshare/grrrmeh';
     const options={
         method: 'POST', 
         url : backend,
         headers: {
             'Content-Type': 'text/plain', // Set the content type to plain text
           },
-        params: { 'filename': 'grrr' },
+        
         data:code
     }
     axios.request(options);
