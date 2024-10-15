@@ -1,20 +1,35 @@
 import React, { useEffect, useRef } from "react";
 import * as monaco from "monaco-editor";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { codeLanguageAtom, codeValueAtom } from "@/recoil/code";
 
-interface MonacoEditorProps {
-  onChange: (content: string) => void; // Define the type for the onChange prop
-  language: string; // Language prop for setting editor language (e.g. JavaScript, HTML, etc.)
-}
 
-const MonacoEditor: React.FC<MonacoEditorProps> = ({ onChange, language }) => {
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null); // Type for Monaco editor instance
-  const containerRef = useRef<HTMLDivElement | null>(null); // Type for the container DOM element
+
+const MonacoEditor: React.FC = () => {
+
+  const language= useRecoilValue(codeLanguageAtom);
+  const [value, setValue]=useRecoilState(codeValueAtom);
+
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null); 
+  const containerRef = useRef<HTMLDivElement | null>(null); 
 
   useEffect(() => {
-    // Set the Monaco Editor theme to VSCode Dark
+    if (language=="python"){
+      setValue("print('hello, world')");
+    }
+    else if (language=="javascript"){
+      setValue("console.log('hello, world')")
+    }
+    else if (language=="html"){
+      setValue("<h1>hello, world</h1>")
+    }
+}, [language]);
+
+
+  useEffect(() => {
     monaco.editor.defineTheme("vs-dark", {
-      base: "vs-dark", // Can also be "vs" or "hc-black"
-      inherit: true, // Whether to inherit from base theme
+      base: "vs-dark", 
+      inherit: true,
       rules: [],
       colors: {
         "editor.foreground": "#ffffff",
@@ -28,29 +43,26 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({ onChange, language }) => {
     });
 
     if (containerRef.current) {
-      // Create the Monaco editor instance
       const editor = monaco.editor.create(containerRef.current, {
-        value: "",
-        language: language, // Use the language prop to enable IntelliSense
-        theme: "vs-dark", // Apply VSCode dark theme
+        value: value,
+        language: language, 
+        theme: "vs-dark", 
         automaticLayout: true,
       });
 
-      // Handle content change events
       editor.onDidChangeModelContent(() => {
         const code = editor.getValue();
-        console.log(code); // Log the current code content
-        onChange(code); // Call the onChange prop with updated content
+        console.log(code); 
+        setValue(code);
       });
 
       editorRef.current = editor;
 
-      // Clean up the editor on component unmount
       return () => {
         editor.dispose();
       };
     }
-  }, [onChange, language]); // Re-run effect if onChange or language changes
+  }, [language]);
 
   return <div ref={containerRef} style={{ height: "100%", width: "100%" }} />;
 };
