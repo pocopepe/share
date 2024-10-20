@@ -19,6 +19,7 @@ app.options('*', (c) => {
   return c.text('', 204); // No content
 });
 
+
 app.get('/', (c) => c.text('Hello Cloudflare Workers!'));
 
 app.post('/upload', async (c) => {

@@ -49,7 +49,7 @@ const MonacoEditor: React.FC = () => {
         editor.dispose();
       };
     }
-  }, [language]);
+  }, [language, value, setValue]);
 
   return <div ref={containerRef} style={{ height: "100%", width: "100%" }} />;
 };

@@ -4,13 +4,12 @@ import { Button } from "@/components/ui/button";
 import { useRecoilState } from "recoil";
 import { codeLanguageAtom } from "@/recoil/code";
 
-
 const LocationBasedDropdown: React.FC = () => {
-  const [position, setPosition]= useRecoilState(codeLanguageAtom);
+  const [position, setPosition] = useRecoilState(codeLanguageAtom);
   const location = useLocation();
   const currentPath = location.pathname;
 
-  return currentPath === "/codeshare" ? (
+  return currentPath.startsWith("/codeshare/") ? ( // Change to startsWith
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="text-white hover:bg-gray-800 transition duration-200 ease-in-out">

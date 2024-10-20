@@ -9,3 +9,8 @@ export const codeValueAtom = atom<string>({
     key: 'codeValueAtom', 
     default: "",
 });
+
+export const codeFileNameAtom = atom<string>({
+    key:"codeFileNameAtome",
+    default:""});
+    
