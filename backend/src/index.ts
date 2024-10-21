@@ -124,24 +124,24 @@ app.post('/cleanup', async (c) => {
   }
 
   try {
-    const { keys } = await bucket.list(); 
+    const objects = await bucket.list(); // Fetch the list of objects in the bucket
 
-    const now = new Date();
-    const objectsToDelete = keys.filter((obj: { lastModified: string }) => {
-      const lastModified = new Date(obj.lastModified);
-      return (now.getTime() - lastModified.getTime()) > 10 * 1000;     
-    });
+    if (!objects || objects.length === 0) {
+      return c.text('No objects to delete.', 200);
+    }
 
-    await Promise.all(objectsToDelete.map(async (obj: { key: string }) => {
+    // Delete all objects in the bucket
+    await Promise.all(objects.map(async (obj: { key: string }) => {
       await bucket.delete(obj.key);
       console.log(`Deleted object: ${obj.key}`);
     }));
 
-    return c.text('Cleanup completed successfully.');
+    return c.text('Bucket cleared successfully.');
   } catch (error) {
     console.error('Error during cleanup:', error);
     return c.text(`Error during cleanup: ${error.message}`, 500);
   }
 });
+
 
 export default app;

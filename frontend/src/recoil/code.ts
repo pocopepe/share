@@ -13,4 +13,9 @@ export const codeValueAtom = atom<string>({
 export const codeFileNameAtom = atom<string>({
     key:"codeFileNameAtome",
     default:""});
+
+export const isAlertVisibleAtom = atom<string>({
+        key:"isAlertVisibleAtom",
+        default:"0"});
+        
     

@@ -2,14 +2,25 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import LocationBasedSaveButton from "./LocationBasedSave";
 import LocationBasedDropdown from "./LocationBasedButtons";
+import { useRecoilState } from "recoil";
+import { isAlertVisibleAtom } from "@/recoil/code";
 
 
 const NavBar: React.FC = () => {
+    const [isAelertVisible]=useRecoilState(isAlertVisibleAtom);
+    
 
     return (
         <nav className="bg--900 shadow-md relative z-10">
             <div className="flex justify-between items-center px-6 py-4">
                 <h1 className="text-white text-xl font-bold">Share</h1>
+                
+                {isAelertVisible === '2' ? (
+  <h1 className="text-white">saved successfully</h1>
+) : isAelertVisible === '1' ? (
+  <h1 className="text-yellow-400">waities...</h1>
+) : null}
+
                 <div className="flex space-x-4">
                     <LocationBasedSaveButton />
                     <LocationBasedDropdown />

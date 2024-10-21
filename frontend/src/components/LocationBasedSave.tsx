@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { codeFileNameAtom, codeLanguageAtom, codeValueAtom } from "@/recoil/code";
+import { codeFileNameAtom, codeLanguageAtom, codeValueAtom, isAlertVisibleAtom } from "@/recoil/code";
 import { useLocation } from 'react-router-dom';   
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+
+
 
 async function datadrop(filename: string, content: string, contentType: string) {
   const url = 'https://share-backend.avijusanjai.workers.dev/codeshare/' + filename;
@@ -46,21 +48,33 @@ const LocationBasedSaveButton = () => {
   const language= useRecoilValue(codeLanguageAtom);
   const filename = useRecoilValue(codeFileNameAtom);
   const code = useRecoilValue(codeValueAtom);
-  
+
+  const showAlert = () => {
+    setIsAlertVisible('2');
+    setTimeout(() => {
+        setIsAlertVisible('0'); 
+    }, 3000);
+};
 
   const handleSaveClick = async () => {
+    setIsAlertVisible('1');
+
     const contentType = fileTypeChecker(language); 
     console.log(contentType);
     const result = await datadrop(filename, code, contentType);
     console.log(result); 
+    if (result === "success") {
+      showAlert();
+    }
   };
+  const setIsAlertVisible=useSetRecoilState(isAlertVisibleAtom);
 
   return (
-    currentPath.startsWith("/codeshare/") ? ( // Change to startsWith
+    currentPath.startsWith("/codeshare/") ? ( 
       <Button
         variant="ghost"
         className="text-white hover:bg-gray-800 transition duration-200 ease-in-out"
-        onClick={handleSaveClick} // Call handleSaveClick directly
+        onClick={handleSaveClick} 
       >
         Save
       </Button>
