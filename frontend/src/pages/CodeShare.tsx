@@ -11,13 +11,12 @@ const CodeShare: React.FC = () => {
     useEffect(() => {
         if (codeFile) {
             setCodeFileName(codeFile);
-        }
-        else{
-            setCodeFileName('FallBackName-Y6byj01E9suT');
+        } else {
+            setCodeFileName('FallBackName-Y6byj01E9suT'); // Use a default name if codeFile is undefined
         }
 
         return () => {
-            setCodeFileName(''); 
+            setCodeFileName(''); // Cleanup on unmount
         };
     }, [codeFile, setCodeFileName]);
 
