@@ -2,23 +2,20 @@ import { Hono } from 'hono';
 
 const app = new Hono();
 
-// CORS Middleware to add the CORS headers globally
 app.use('*', (c, next) => {
-  c.res.headers.set('Access-Control-Allow-Origin', '*'); // Set this to a specific origin if needed
+  c.res.headers.set('Access-Control-Allow-Origin', '*');
   c.res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   c.res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   c.res.headers.set('Access-Control-Expose-Headers', 'ETag');
   return next();
 });
 
-// Handle preflight OPTIONS requests
 app.options('*', (c) => {
-  c.res.headers.set('Access-Control-Allow-Origin', '*'); // Set this to a specific origin if needed
+  c.res.headers.set('Access-Control-Allow-Origin', '*');
   c.res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   c.res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  return c.text('', 204); // No content
+  return c.text('', 204);
 });
-
 
 app.get('/', (c) => c.text('Hello Cloudflare Workers!'));
 
@@ -55,7 +52,54 @@ app.post('/upload', async (c) => {
   }
 });
 
-app.post('/codeshare/:filename', async (c) => {
+
+app.get('/get/codeshare/:filename', async (c) => { 
+  const bucket = (c.env as { MY_BUCKET: any }).MY_BUCKET;
+  const requestedFilename = c.req.param('filename'); 
+
+  console.log('Requested filename:', requestedFilename); 
+
+  if (!bucket) {
+    console.error('Bucket is undefined.');
+    return c.text('Internal server error: Bucket not found.', 500);
+  }
+
+  try {
+    // List all files in the bucket
+    const listResult = await bucket.list();
+    const fileKeys = listResult.objects.map(obj => obj.key);
+    console.log('Current objects in the bucket:', fileKeys); 
+
+    // Remove the file extension from the keys in the bucket
+    const baseFilenames = fileKeys.map(key => key.split('.')[0]);
+
+    // Check if the requested filename (without extension) matches any file in the bucket
+    const matchingIndex = baseFilenames.indexOf(requestedFilename.split('.')[0]);
+    
+    if (matchingIndex === -1) {
+      console.log(`File matching ${requestedFilename} does not exist.`);
+      return c.text('File not found', 404); 
+    }
+
+    // Fetch the object and its content type
+    const matchingFileKey = fileKeys[matchingIndex]; // Get the original key
+    const object = await bucket.get(matchingFileKey); 
+    const contentType = object.httpMetadata.contentType; 
+    const fileContents = await object.arrayBuffer(); // Use arrayBuffer for binary data
+    
+    console.log(`File ${matchingFileKey} fetched successfully with Content-Type: ${contentType}`);
+    
+    // Return both the content and the content type
+    return c.json({ content: new TextDecoder().decode(fileContents), contentType }); 
+  } catch (error) {
+    console.error('Error fetching file:', error);
+    return c.text('Error fetching file', 500); 
+  }
+});
+
+
+
+app.post('upload/codeshare/:filename', async (c) => {
   const filename = c.req.param('filename');
   console.log('Received request for filename:', filename);
 
@@ -101,7 +145,7 @@ app.post('/codeshare/:filename', async (c) => {
 
     const objectKey = `${filename}.${fileExtension}`;
     console.log('Saving content:', fileContent);
-
+    
     await bucket.put(objectKey, fileContent, {
       httpMetadata: {
         contentType: r2ContentType,
@@ -124,24 +168,22 @@ app.post('/cleanup', async (c) => {
   }
 
   try {
-    const objects = await bucket.list(); // Fetch the list of objects in the bucket
+    const result = await bucket.list();
+    console.log('Objects to delete:', result);
 
-    if (!objects || objects.length === 0) {
-      return c.text('No objects to delete.', 200);
+    if (result.objects && result.objects.length > 0) {
+      const deletePromises = result.objects.map(obj => bucket.delete(obj.key));
+      await Promise.all(deletePromises); 
+      console.log('All objects deleted successfully.');
+      return c.text('All objects deleted successfully.');
+    } else {
+      console.log('No objects to delete.');
+      return c.text('No objects to delete.');
     }
-
-    // Delete all objects in the bucket
-    await Promise.all(objects.map(async (obj: { key: string }) => {
-      await bucket.delete(obj.key);
-      console.log(`Deleted object: ${obj.key}`);
-    }));
-
-    return c.text('Bucket cleared successfully.');
   } catch (error) {
-    console.error('Error during cleanup:', error);
-    return c.text(`Error during cleanup: ${error.message}`, 500);
+    console.error('Error in cleanup:', error); 
+    return c.text('Error in cleanup', 500);
   }
 });
-
 
 export default app;

@@ -2,45 +2,8 @@ import { Button } from "@/components/ui/button";
 import { codeFileNameAtom, codeLanguageAtom, codeValueAtom, isAlertVisibleAtom } from "@/recoil/code";
 import { useLocation } from 'react-router-dom';   
 import { useRecoilValue, useSetRecoilState } from "recoil";
-
-
-
-async function datadrop(filename: string, content: string, contentType: string) {
-  const url = 'https://share-backend.avijusanjai.workers.dev/codeshare/' + filename;
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      body: content,
-      headers: {
-        "Content-Type": contentType
-      }
-    });
-
-    if (response.ok) {
-      return "success"; 
-    } else {
-      return filename;
-    }
-  } catch (error) {
-    console.error('Error saving data:', error);
-    return "error"; 
-  }
-}
-
-function fileTypeChecker(language:string){
-  if(language==='javascript'){
-    return 'application/javascript';
-}
-else if(language==='python'){
-    return 'application/x-python';
-}
-else if(language==='html'){
-    return 'text/html';
-}
-else{
-    return 'text/plain';
-}
-}
+import  fileTypeChecker  from "@/helpers/filetypechecker";
+import datadrop from "@/helpers/datadrop";
 
 const LocationBasedSaveButton = () => {
   const location = useLocation();
@@ -59,9 +22,7 @@ const LocationBasedSaveButton = () => {
   const handleSaveClick = async () => {
     setIsAlertVisible('1');
 
-    const contentType = fileTypeChecker(language); 
-    console.log(contentType);
-    const result = await datadrop(filename, code, contentType);
+    const result = await datadrop(filename, code, fileTypeChecker(language, "filetype"));
     console.log(result); 
     if (result === "success") {
       showAlert();
