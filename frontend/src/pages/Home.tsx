@@ -40,7 +40,6 @@ function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen relative z-10">
-      {/* Main Content */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

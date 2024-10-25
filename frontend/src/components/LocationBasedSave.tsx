@@ -33,12 +33,14 @@ const LocationBasedSaveButton = () => {
   return (
     currentPath.startsWith("/codeshare/") ? ( 
       <Button
-        variant="ghost"
-        className="text-white hover:bg-gray-800 transition duration-200 ease-in-out"
-        onClick={handleSaveClick} 
-      >
-        Save
-      </Button>
+  variant="ghost"
+  className="text-white hover:bg-[#222] hover:!text-[#b3b3b3] transition duration-200 ease-in-out"
+  onClick={handleSaveClick}
+>
+  Save
+</Button>
+
+
     ) : null
   );
 };

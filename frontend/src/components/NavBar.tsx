@@ -13,7 +13,7 @@ const NavBar: React.FC = () => {
     return (
         <nav className="bg--900 shadow-md relative z-10">
             <div className="flex justify-between items-center px-6 py-4">
-                <h1 className="text-white text-xl font-bold">Share</h1>
+                <Link to='/home'><h1 className="text-white text-xl font-bold">Share</h1></Link>
                 
                 {isAelertVisible === '2' ? (
   <h1 className="text-white">saved successfully</h1>
@@ -25,17 +25,17 @@ const NavBar: React.FC = () => {
                     <LocationBasedSaveButton />
                     <LocationBasedDropdown />
                     <Link to="/codeshare">
-                        <Button variant="ghost" className="text-white hover:bg-gray-800 transition duration-200 ease-in-out">
+                        <Button variant="ghost" className="text-white hover:bg-[#222] hover:!text-[#b3b3b3] transition duration-200 ease-in-out">
                             Code Share
                         </Button>
                     </Link>
                     <Link to="/home">
-                        <Button variant="ghost" className="text-white hover:bg-gray-800 transition duration-200 ease-in-out">
+                        <Button variant="ghost" className="text-white hover:bg-[#222] hover:!text-[#b3b3b3] transition duration-200 ease-in-out">
                             Home
                         </Button>
                     </Link>
                     <Link to="/myfiles">
-                        <Button variant="ghost" className="text-white hover:bg-gray-800 transition duration-200 ease-in-out">
+                        <Button variant="ghost" className="text-white hover:bg-[#222] hover:!text-[#b3b3b3] transition duration-200 ease-in-out">
                             My Files
                         </Button>
                     </Link>

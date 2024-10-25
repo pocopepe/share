@@ -19,6 +19,17 @@ app.options('*', (c) => {
 
 app.get('/', (c) => c.text('Hello Cloudflare Workers!'));
 
+
+app.get('/hash', (c)=>{
+  const password = c.req.header('password'); 
+  if (!password) {
+    return c.text('Password header not provided', 400); 
+  }
+  
+  return c.text(`Received password: ${password}`);
+
+})
+
 app.post('/upload', async (c) => {
   const bucket = (c.env as { MY_BUCKET: any }).MY_BUCKET;
 
