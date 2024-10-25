@@ -1,10 +1,9 @@
-// App.tsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import StarsParticles from "./components/tsparticles";
 import CodeShare from './pages/CodeShare';
 import Home from './pages/Home';
 import MyFiles from './pages/MyFiles';
-import NavBar from "./components/NavBar"; // Import the NavBar component
+import NavBar from "./components/NavBar"; 
 import { RecoilRoot } from "recoil";
 
 
