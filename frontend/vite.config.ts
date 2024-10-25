@@ -1,10 +1,14 @@
 import path from "path";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import Sitemap from 'vite-plugin-sitemap'
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  plugins: [react(),     VitePWA({ 
+  plugins: [react(), 
+    Sitemap({ hostname: 'https://share-frontend.pages.dev' }),
+    
+    VitePWA({ 
     registerType: 'autoUpdate',
     includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
     workbox: {
