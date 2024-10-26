@@ -6,7 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [react(), 
-    Sitemap({ hostname: 'https://share-frontend.pages.dev' }),
+    Sitemap({ hostname: 'https://share-frontend.pages.dev' , outDir: './dist', changefreq: 'weekly'}),
     
     VitePWA({ 
     registerType: 'autoUpdate',
