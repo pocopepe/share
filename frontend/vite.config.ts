@@ -6,8 +6,19 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [react(), 
-    Sitemap({ hostname: 'https://share-frontend.pages.dev' , outDir: './public', changefreq: 'weekly'}),
-    
+    Sitemap({
+      hostname: 'https://share-frontend.pages.dev',
+      outDir: './dist',
+      changefreq: 'weekly',
+      robots: [
+        {
+          userAgent: '*',
+          allow: '/',
+          crawlDelay: 10  
+        }
+      ]
+    }),
+        
     VitePWA({ 
     registerType: 'autoUpdate',
     includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
