@@ -1,2 +1,8 @@
-/*
-  X-Robots-Tag: index, follow
+/*  
+X-Robots-Tag: index, follow
+
+/robots.txt
+X-Robots-Tag: index, follow
+
+/sitemap.xml
+X-Robots-Tag: noindex
