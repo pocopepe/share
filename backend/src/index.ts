@@ -1,4 +1,24 @@
 import { Hono } from 'hono';
+cong
+
+import {
+  S3Client,
+  ListBucketsCommand,
+  ListObjectsV2Command,
+  GetObjectCommand,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3";
+
+
+const S3 = new S3Client({
+  region: "auto",
+  endpoint: `https://ccd5504b92a1d3e5b77e973d753b7048.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: ACCESS_KEY_ID,
+    secretAccessKey: SECRET_ACCESS_KEY,
+  },
+});
+
 
 const app = new Hono();
 
@@ -62,6 +82,46 @@ app.post('/upload', async (c) => {
     return c.text(`Error uploading file: ${error.message}`, 500);
   }
 });
+
+app.get('/get/files', async (c) => {
+  const bucket = (c.env as { MY_BUCKET: any }).MY_BUCKET;
+
+  if (!bucket) {
+    console.error('Bucket is undefined.');
+    return c.text('Internal server error: Bucket not found.', 500);
+  }
+
+  try {
+    // List all files in the bucket
+    const listResult = await bucket.list();
+    console.log('List result:', listResult);  // Log the list result for debugging
+
+    const fileKeys = listResult.objects.map(obj => obj.key);
+    
+    if (fileKeys.length === 0) {
+      return c.json({ message: 'No files found in the bucket.' });
+    }
+
+    // Create custom signed URLs for each file
+    const filesWithUrls = fileKeys.map((fileKey) => {
+      const url = new URL(`https://${c.env.MY_BUCKET_ACCOUNT_ID}.r2.cloudflarestorage.com/${fileKey}`);
+      const expirationTime = Date.now() + 3600 * 1000;  // 1 hour expiration
+
+      const signedUrl = `${url}?expiration=${expirationTime}&signature=your_signature_here`;
+
+      return {
+        filename: fileKey,
+        downloadUrl: signedUrl
+      };
+    });
+
+    return c.json({ files: filesWithUrls });
+  } catch (error) {
+    console.error('Error listing files:', error);
+    return c.text(`Error listing files: ${error.message}`, 500);  // Return the error message in the response
+  }
+});
+
 
 
 app.get('/get/codeshare/:filename', async (c) => { 
