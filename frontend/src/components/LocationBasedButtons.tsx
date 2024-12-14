@@ -1,15 +1,25 @@
+import { useEffect } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useRecoilState } from "recoil";
-import { codeLanguageAtom } from "@/recoil/code";
+import { codeLanguageAtom, isCodesharePageAtom } from "@/recoil/code";
 
 const LocationBasedDropdown: React.FC = () => {
   const [position, setPosition] = useRecoilState(codeLanguageAtom);
+  const [isCodeSharePage, setCodeSharePage] = useRecoilState(isCodesharePageAtom);
   const location = useLocation();
   const currentPath = location.pathname;
 
-  return currentPath.startsWith("/codeshare/") ? ( // Change to startsWith
+  useEffect(() => {
+    if (currentPath.startsWith("/codeshare/")) {
+      setCodeSharePage(true);
+    } else {
+      setCodeSharePage(false);
+    }
+  }, [currentPath, setCodeSharePage]);
+
+  return isCodeSharePage ? (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="text-white hover:bg-[#222] hover:!text-[#b3b3b3] transition duration-200 ease-in-out">
@@ -23,7 +33,6 @@ const LocationBasedDropdown: React.FC = () => {
         <DropdownMenuLabel className="text-white">Select the language of your choice</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={position} onValueChange={(value) => setPosition(value)}>
-          {/* Ensure value strings match exactly with `position` */}
           <DropdownMenuRadioItem className="text-white" value="javascript">JavaScript</DropdownMenuRadioItem>
           <DropdownMenuRadioItem className="text-white" value="python">Python</DropdownMenuRadioItem>
           <DropdownMenuRadioItem className="text-white" value="html">HTML</DropdownMenuRadioItem>

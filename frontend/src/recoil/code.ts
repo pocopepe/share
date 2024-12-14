@@ -1,9 +1,9 @@
 import { atom } from 'recoil';
 
-export const codeLanguageAtom=atom<string>({
-    key:'codeLanguageAtom',
-    default: 'python'
-})
+export const codeLanguageAtom = atom<string>({
+    key: 'codeLanguageAtom',
+    default: 'python',
+});
 
 export const codeValueAtom = atom<string>({
     key: 'codeValueAtom', 
@@ -11,11 +11,17 @@ export const codeValueAtom = atom<string>({
 });
 
 export const codeFileNameAtom = atom<string>({
-    key:"codeFileNameAtome",
-    default:""});
+    key: "codeFileNameAtom",
+    default: "",
+});
 
 export const isAlertVisibleAtom = atom<string>({
-        key:"isAlertVisibleAtom",
-        default:"0"});
-        
-    
+    key: "isAlertVisibleAtom",
+    default: "0",
+});
+
+// Atom to store the isCodesharePage boolean
+export const isCodesharePageAtom = atom<boolean>({
+    key: 'isCodesharePageAtom',
+    default: false,
+});
