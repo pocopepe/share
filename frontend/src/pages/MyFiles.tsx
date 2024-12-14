@@ -48,7 +48,7 @@ function MyFiles() {
               <Input
                 className="text-white bg-[#222] border border-[#444] focus:ring-0 focus:outline-none placeholder-[#b3b3b3]"
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value)}
                 placeholder="Type here"
               />
               <Button
