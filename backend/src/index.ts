@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
-cong
-
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   S3Client,
   ListBucketsCommand,
@@ -9,19 +8,9 @@ import {
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
 
-
-const S3 = new S3Client({
-  region: "auto",
-  endpoint: `https://ccd5504b92a1d3e5b77e973d753b7048.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: ACCESS_KEY_ID,
-    secretAccessKey: SECRET_ACCESS_KEY,
-  },
-});
-
-
 const app = new Hono();
 
+// CORS middleware to allow cross-origin requests
 app.use('*', (c, next) => {
   c.res.headers.set('Access-Control-Allow-Origin', '*');
   c.res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -37,53 +26,82 @@ app.options('*', (c) => {
   return c.text('', 204);
 });
 
-app.get('/', (c) => c.text('Hello Cloudflare Workers!'));
+// Endpoint to upload file (example)
+app.post('/upload/files', async (c) => {
+  const account_id = c.env.CLOUDFLARE_ACCOUNT_ID; 
+  const access_id = c.env.ACCESS_ID;
+  const secret_access_id = c.env.SECRET_ACCESS_ID;
 
-
-app.get('/hash', (c)=>{
-  const password = c.req.header('password'); 
-  if (!password) {
-    return c.text('Password header not provided', 400); 
+  const filename = c.req.param('filename'); 
+  if (!filename) {
+    return c.text('Filename is required', 400);
   }
-  
-  return c.text(`Received password: ${password}`);
 
-})
-
-app.post('/upload', async (c) => {
-  const bucket = (c.env as { MY_BUCKET: any }).MY_BUCKET;
-
-  if (!bucket) {
-    console.error('Bucket is undefined. Check your wrangler.toml for binding.');
-    return c.text('Internal server error: Bucket not found.', 500);
-  }
+  const S3 = new S3Client({
+    region: "auto",
+    endpoint: `https://${account_id}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: access_id,
+      secretAccessKey: secret_access_id,
+    },
+  });
 
   try {
-    const body = await c.req.parseBody();
-    const metaData = body['file'];
-
-    if (!metaData) {
-      console.error('No file metadata found in the request body.');
-      return c.text('Bad request: No file metadata provided.', 400);
-    }
-
-    const fileContent = 'grr'; 
-
-    await bucket.put(metaData.name, fileContent, {
-      httpMetadata: {
-        contentType: metaData.type,
-      },
-    });
-
-    console.log(`File ${metaData.name} uploaded successfully.`);
-    return c.text('File uploaded successfully.');
+    const url = await getSignedUrl(
+      S3,
+      new PutObjectCommand({ Bucket: "share", Key: filename }),
+      { expiresIn: 3600 }
+    );
+    return c.json({ downloadUrl: url });
   } catch (error) {
-    console.error('Error during file upload:', error);
-    return c.text(`Error uploading file: ${error.message}`, 500);
+    console.error("Error generating signed URL:", error.message, error.stack);
+    return c.text(`Failed to generate download URL: ${error.message}`, 500);
   }
+
 });
 
-app.get('/get/files', async (c) => {
+
+app.get('/get/files/:filename', async (c) => {
+  const account_id = c.env.CLOUDFLARE_ACCOUNT_ID; 
+  const access_id = c.env.ACCESS_ID;
+  const secret_access_id = c.env.SECRET_ACCESS_ID;
+
+  const filename = c.req.param('filename'); 
+  if (!filename) {
+    return c.text('Filename is required', 400);
+  }
+
+  const S3 = new S3Client({
+    region: "auto",
+    endpoint: `https://${account_id}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: access_id,
+      secretAccessKey: secret_access_id,
+    },
+  });
+
+  try {
+    const url = await getSignedUrl(
+      S3,
+      new GetObjectCommand({ Bucket: "share", Key: filename }),
+      { expiresIn: 3600 }
+    );
+    return c.json({ downloadUrl: url });
+  } catch (error) {
+    console.error("Error generating signed URL:", error.message, error.stack);
+    return c.text(`Failed to generate download URL: ${error.message}`, 500);
+  }
+  
+});
+
+
+
+
+// Endpoint to upload a file to codeshare with the filename parameter
+app.post('/upload/codeshare/:filename', async (c) => {
+  const filename = c.req.param('filename');
+  console.log('Received request for filename:', filename);
+
   const bucket = (c.env as { MY_BUCKET: any }).MY_BUCKET;
 
   if (!bucket) {
@@ -92,37 +110,53 @@ app.get('/get/files', async (c) => {
   }
 
   try {
-    // List all files in the bucket
-    const listResult = await bucket.list();
-    console.log('List result:', listResult);  // Log the list result for debugging
+    const contentType = c.req.header('Content-Type');
+    console.log('Content-Type:', contentType);
 
-    const fileKeys = listResult.objects.map(obj => obj.key);
-    
-    if (fileKeys.length === 0) {
-      return c.json({ message: 'No files found in the bucket.' });
+    let fileContent = '';
+    let fileExtension = '';
+    let r2ContentType = '';
+
+    if (contentType === 'application/json') {
+      const body = await c.req.json();
+      fileContent = body.content || '';
+      fileExtension = 'json';
+      r2ContentType = 'application/json';
+    } else if (contentType === 'text/plain') {
+      fileContent = await c.req.text();
+      fileExtension = 'txt';
+      r2ContentType = 'text/plain';
+    } else if (contentType === 'application/javascript') {
+      fileContent = await c.req.text();
+      fileExtension = 'js';
+      r2ContentType = 'application/javascript';
+    } else if (contentType === 'text/html') {
+      fileContent = await c.req.text();
+      fileExtension = 'html';
+      r2ContentType = 'text/html';
+    } else if (contentType === 'application/x-python') {
+      fileContent = await c.req.text();
+      fileExtension = 'py';
+      r2ContentType = 'application/x-python';
+    } else {
+      return c.text('Unsupported Content-Type. Please send JSON, plain text, JavaScript, HTML, or Python.', 400);
     }
 
-    // Create custom signed URLs for each file
-    const filesWithUrls = fileKeys.map((fileKey) => {
-      const url = new URL(`https://${c.env.MY_BUCKET_ACCOUNT_ID}.r2.cloudflarestorage.com/${fileKey}`);
-      const expirationTime = Date.now() + 3600 * 1000;  // 1 hour expiration
+    const objectKey = `${filename}.${fileExtension}`;
+    console.log('Saving content:', fileContent);
 
-      const signedUrl = `${url}?expiration=${expirationTime}&signature=your_signature_here`;
-
-      return {
-        filename: fileKey,
-        downloadUrl: signedUrl
-      };
+    await bucket.put(objectKey, fileContent, {
+      httpMetadata: {
+        contentType: r2ContentType,
+      },
     });
 
-    return c.json({ files: filesWithUrls });
+    return c.text(`File ${objectKey} created successfully with content.`);
   } catch (error) {
-    console.error('Error listing files:', error);
-    return c.text(`Error listing files: ${error.message}`, 500);  // Return the error message in the response
+    console.error('Error creating file:', error);
+    return c.text(`Error creating file`, 500);
   }
 });
-
-
 
 app.get('/get/codeshare/:filename', async (c) => { 
   const bucket = (c.env as { MY_BUCKET: any }).MY_BUCKET;
@@ -169,67 +203,7 @@ app.get('/get/codeshare/:filename', async (c) => {
 });
 
 
-
-app.post('upload/codeshare/:filename', async (c) => {
-  const filename = c.req.param('filename');
-  console.log('Received request for filename:', filename);
-
-  const bucket = (c.env as { MY_BUCKET: any }).MY_BUCKET;
-
-  if (!bucket) {
-    console.error('Bucket is undefined.');
-    return c.text('Internal server error: Bucket not found.', 500);
-  }
-
-  try {
-    const contentType = c.req.header('Content-Type');
-    console.log('Content-Type:', contentType);
-
-    let fileContent = '';
-    let fileExtension = '';
-    let r2ContentType = '';
-
-    if (contentType === 'application/json') {
-      const body = await c.req.json();
-      fileContent = body.content || '';
-      fileExtension = 'json';
-      r2ContentType = 'application/json';
-    } else if (contentType === 'text/plain') {
-      fileContent = await c.req.text();
-      fileExtension = 'txt';
-      r2ContentType = 'text/plain';
-    } else if (contentType === 'application/javascript') {
-      fileContent = await c.req.text();
-      fileExtension = 'js';
-      r2ContentType = 'application/javascript';
-    } else if (contentType === 'text/html') {
-      fileContent = await c.req.text();
-      fileExtension = 'html';
-      r2ContentType = 'text/html';
-    } else if (contentType === 'application/x-python') {
-      fileContent = await c.req.text();
-      fileExtension = 'py';
-      r2ContentType = 'application/x-python';
-    } else {
-      return c.text('Unsupported Content-Type. Please send JSON, plain text, JavaScript, HTML, or Python.', 400);
-    }
-
-    const objectKey = `${filename}.${fileExtension}`;
-    console.log('Saving content:', fileContent);
-    
-    await bucket.put(objectKey, fileContent, {
-      httpMetadata: {
-        contentType: r2ContentType,
-      },
-    });
-
-    return c.text(`File ${objectKey} created successfully with content.`);
-  } catch (error) {
-    console.error('Error creating file:', error);
-    return c.text(`Error creating file`, 500);
-  }
-});
-
+// Cleanup endpoint to delete all files in the R2 bucket
 app.post('/cleanup', async (c) => {
   const bucket = (c.env as { MY_BUCKET: any }).MY_BUCKET;
 
@@ -243,8 +217,8 @@ app.post('/cleanup', async (c) => {
     console.log('Objects to delete:', result);
 
     if (result.objects && result.objects.length > 0) {
-      const deletePromises = result.objects.map(obj => bucket.delete(obj.key));
-      await Promise.all(deletePromises); 
+      const deletePromises = result.objects.map((obj) => bucket.delete(obj.key));
+      await Promise.all(deletePromises);
       console.log('All objects deleted successfully.');
       return c.text('All objects deleted successfully.');
     } else {
@@ -252,7 +226,7 @@ app.post('/cleanup', async (c) => {
       return c.text('No objects to delete.');
     }
   } catch (error) {
-    console.error('Error in cleanup:', error); 
+    console.error('Error in cleanup:', error);
     return c.text('Error in cleanup', 500);
   }
 });
