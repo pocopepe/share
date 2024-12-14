@@ -27,16 +27,19 @@ app.options('*', (c) => {
 });
 
 // Endpoint to upload file (example)
-app.post('/upload/files', async (c) => {
+
+app.post('/upload/files:filename', async (c) => {
+  // Access environment variables
   const account_id = c.env.CLOUDFLARE_ACCOUNT_ID; 
   const access_id = c.env.ACCESS_ID;
   const secret_access_id = c.env.SECRET_ACCESS_ID;
+  const filename = c.req.param('filename');
 
-  const filename = c.req.param('filename'); 
   if (!filename) {
     return c.text('Filename is required', 400);
   }
 
+  // Initialize the S3 client
   const S3 = new S3Client({
     region: "auto",
     endpoint: `https://${account_id}.r2.cloudflarestorage.com`,
@@ -47,17 +50,19 @@ app.post('/upload/files', async (c) => {
   });
 
   try {
+    // Generate a pre-signed PUT URL
     const url = await getSignedUrl(
       S3,
       new PutObjectCommand({ Bucket: "share", Key: filename }),
-      { expiresIn: 3600 }
-    );
-    return c.json({ downloadUrl: url });
-  } catch (error) {
-    console.error("Error generating signed URL:", error.message, error.stack);
-    return c.text(`Failed to generate download URL: ${error.message}`, 500);
-  }
+      { expiresIn: 3600 },
+      
+    )
 
+    return c.json({ uploadUrl: url });
+  } catch (error) {
+    console.error("Error generating upload URL:", error.message, error.stack);
+    return c.text(`Failed to generate upload URL: ${error.message}`, 500);
+  }
 });
 
 
