@@ -1,57 +1,31 @@
 import { useState } from 'react';
-import { Button } from "@/components/ui/button";
 
+const mainurl = "https://share-backend.avijusanjai.workers.dev/get/files/";
 
 function MyFiles() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [inputValue, setInputValue] = useState('');
+  const [fileName, setFileName] = useState('');
 
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      setSelectedFile(files[0]);
-    }
+  const handleInputChange = (event) => {
+    const value = event.target.value;
+    setInputValue(value);
+    setFileName(value);
   };
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      alert('Please select a file to upload.');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-
-    try {
-      const response = await fetch('https://share-backend.avijusanjai.workers.dev/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        alert('File uploaded successfully!');
-        setSelectedFile(null); // Clear the selected file
-      } else {
-        alert('File upload failed.');
-      }
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      alert('An error occurred while uploading the file.');
-    }
+  const handleFetchFile = () => {
+    const url = `${mainurl}${fileName}`;
+    console.log("Fetching file from:", url);
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4">
-      <input 
-        type="file" 
-        onChange={handleFileChange} 
-        className="mt-4" 
-      />
-      <div className="flex space-x-4">
-        <Button onClick={handleUpload}>Upload</Button>
-        <Button onClick={() => alert('Browse user storage feature coming soon!')}>Browse</Button>
-      </div>
-    </div>
+    <>
+      <div className="text-white">mehmehmemhejsdhdbfsjhdbf</div>
+      <button className="bg-white">meh</button>
+      <br></br>
+      <br></br>
+      <input type="text" value={inputValue} onChange={handleInputChange} />
+      <button className="bg-white" onClick={handleFetchFile}>doop</button>
+    </>
   );
 }
 
