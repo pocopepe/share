@@ -6,6 +6,7 @@ import {
   ListObjectsV2Command,
   GetObjectCommand,
   PutObjectCommand,
+  HeadObjectCommand,
 } from "@aws-sdk/client-s3";
 
 const app = new Hono();
@@ -86,17 +87,23 @@ app.get('/get/files/:filename', async (c) => {
   });
 
   try {
+    // Check if the file exists
+    await S3.send(new HeadObjectCommand({ Bucket: "share", Key: filename }));
+    //files could be dowloaded within the day
     const url = await getSignedUrl(
       S3,
       new GetObjectCommand({ Bucket: "share", Key: filename }),
-      { expiresIn: 3600 }
+      { expiresIn: 86400 }
     );
     return c.json({ downloadUrl: url });
+
   } catch (error) {
+    if (error.name === 'NotFound' || error.name === 'NoSuchKey') {
+      return c.text('File does not exist', 404);
+    }
     console.error("Error generating signed URL:", error.message, error.stack);
     return c.text(`Failed to generate download URL: ${error.message}`, 500);
   }
-  
 });
 
 
