@@ -8,22 +8,30 @@ import { RecoilRoot } from "recoil";
 const CodeShare = lazy(() => import("./pages/CodeShare"));
 const MyFiles = lazy(() => import("./pages/MyFiles"));
 
+const SHORT_WORDS = [
+    "aero", "beam", "bend", "bird", "blue", "calm", "code", "dawn", "dust", "echo",
+    "fern", "fire", "flux", "glow", "gold", "grid", "haze", "iris", "jade", "jolt",
+    "keen", "kite", "lava", "leaf", "lime", "loop", "mint", "mist", "moon", "moss",
+    "navy", "node", "opal", "peak", "pine", "pink", "play", "plot", "rain", "reef",
+    "ring", "rose", "ruby", "sage", "sand", "seed", "silk", "snow", "star", "surf",
+    "teal", "tide", "tiny", "tone", "tree", "wave", "wind", "wire", "wolf", "zeal",
+];
 
+const randomItem = (items: string[]): string =>
+    items[Math.floor(Math.random() * items.length)];
 
+const generateShareCode = (): string => {
+    const first = randomItem(SHORT_WORDS);
+    const second = randomItem(SHORT_WORDS);
+    const number = String(Math.floor(Math.random() * 100)).padStart(2, "0");
+    return `${first}${second}${number}`;
+};
 function App() {
-    const generateRandomString = (length: number) => {
-        const characters = 'abcdefghijklmnopqrstuvwxyz';
-        let result = '';
-        for (let i = 0; i < length; i++) {
-          result += characters.charAt(Math.floor(Math.random() * characters.length));
-        }
-        return result;
-      };
-    
+
     return (
         <RecoilRoot>
             <Router>
-                <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-950">
+                <div className="relative flex h-screen flex-col overflow-hidden bg-slate-950">
                     <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_10%_20%,rgba(56,189,248,0.18),transparent_38%),radial-gradient(circle_at_85%_10%,rgba(168,85,247,0.16),transparent_42%),radial-gradient(circle_at_50%_100%,rgba(14,116,144,0.22),transparent_48%)]" />
                     <StarsParticles />
                     <NavBar />
@@ -32,7 +40,7 @@ function App() {
                             <Routes>
                                 <Route path="/" element={<Navigate to="/home" />} />
                                 <Route path="/codeshare/:codeFile" element={<CodeShare />} />
-                                <Route path="/codeshare" element={<Navigate to={`/codeshare/${generateRandomString(10)}.txt`} replace />} />
+                                <Route path="/codeshare" element={<Navigate to={`/codeshare/${generateShareCode()}`} replace />} />
                                 <Route path="/home" element={<Home />} />
                                 <Route path="/myfiles" element={<MyFiles />} />
                             </Routes>

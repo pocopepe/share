@@ -76,42 +76,38 @@ function MyFiles() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-full bg-transparent text-white">
+      <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
-          <div className="grid gap-4 lg:grid-cols-[1.35fr_0.9fr] lg:items-end">
-            <div className="space-y-2">
-              <p className="text-sm uppercase tracking-[0.3em] text-zinc-400">File Vault</p>
-              <h1 className="text-3xl font-semibold text-white sm:text-4xl">Upload files once, retrieve them by email later</h1>
-              <p className="max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">
-                Pick one file or many files. One upload button handles both: single files are stored directly, multiple files are packed automatically.
-              </p>
-            </div>
-            <div className="grid gap-3 rounded-2xl border border-white/10 bg-black/40 p-4">
-              <Label className="text-sm font-medium text-zinc-300">Email address</Label>
-              <Input
-                className="border-white/10 bg-zinc-950 text-white placeholder:text-zinc-500 focus-visible:ring-zinc-500"
-                value={uploadEmail}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUploadEmail(e.target.value)}
-                placeholder="name@example.com"
-              />
-            </div>
+          <div className="space-y-2">
+            <p className="text-sm uppercase tracking-[0.3em] text-zinc-400">File Vault</p>
+            <h1 className="text-3xl font-semibold text-white sm:text-4xl">Upload files once, retrieve them by email later</h1>
+            <p className="max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">
+              Pick one file or many files. One upload button handles both: single files are stored directly, multiple files are packed automatically.
+            </p>
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <section className="rounded-3xl border border-white/10 bg-zinc-950/90 p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between gap-4">
+            <div className="mb-4 space-y-1">
               <div>
                 <h2 className="text-xl font-semibold text-white">Upload</h2>
-                <p className="text-sm text-zinc-400">Select files and hit upload. The backend decides single vs zip automatically.</p>
+                <p className="text-sm text-zinc-400">Use one email and upload files in one step.</p>
               </div>
-              <Button onClick={handleUpload} disabled={isBusy} className="bg-white text-black hover:bg-zinc-200">
-                {isBusy ? "Working..." : "Upload"}
-              </Button>
             </div>
 
             <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-zinc-300">Upload email</Label>
+                <Input
+                  className="border-white/10 bg-zinc-900 text-white placeholder:text-zinc-500 focus-visible:ring-zinc-500"
+                  value={uploadEmail}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUploadEmail(e.target.value)}
+                  placeholder="name@example.com"
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-zinc-300">Files</Label>
                 <Input
@@ -139,6 +135,10 @@ function MyFiles() {
                   Choose one file or several files to upload.
                 </div>
               )}
+
+              <Button onClick={handleUpload} disabled={isBusy} className="w-full bg-white text-black hover:bg-zinc-200">
+                {isBusy ? "Working..." : "Upload"}
+              </Button>
             </div>
           </section>
 

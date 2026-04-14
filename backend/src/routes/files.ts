@@ -32,7 +32,8 @@ const safeFileName = (name: string): string =>
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "") || "upload";
 
-const buildIndexKey = (email: string): string => `email-index/${encodeURIComponent(normalizeEmail(email))}.json`;
+const buildIndexKey = (email: string): string =>
+  `email-index/${encodeURIComponent(normalizeEmail(email))}.json`;
 
 const buildUploadKey = (email: string, zipFilename: string): string => {
   const normalizedEmail = encodeURIComponent(normalizeEmail(email));
@@ -52,17 +53,19 @@ const readEmailIndex = async (bucket: any, email: string): Promise<EmailUploadIn
 
   try {
     const text = await existing.text();
-    const parsed = JSON.parse(text) as Partial<EmailUploadIndex> & { uploads?: Array<Partial<EmailUploadRecord> & { zipFilename?: string }> };
+    const parsed = JSON.parse(text) as Partial<EmailUploadIndex> & {
+      uploads?: Array<Partial<EmailUploadRecord>>;
+    };
     return {
       email: normalizeEmail(parsed.email || email),
       uploads: Array.isArray(parsed.uploads)
         ? parsed.uploads.map((upload) => ({
             key: String(upload.key || ""),
-          itemName: String(upload.itemName || "upload"),
+            itemName: String(upload.itemName || "upload"),
             email: normalizeEmail(String(upload.email || email)),
             createdAt: String(upload.createdAt || new Date().toISOString()),
             expiresAt: String(upload.expiresAt || new Date().toISOString()),
-            kind: (upload.kind === "single" || upload.kind === "zip") ? upload.kind : "zip",
+            kind: upload.kind === "single" || upload.kind === "zip" ? upload.kind : "zip",
             fileCount: Number(upload.fileCount || 1),
           }))
         : [],
@@ -111,7 +114,7 @@ export const registerFileRoutes = (app: Hono): void => {
     const retentionMetadata = buildRetentionMetadata(retentionDays, "guest");
     const isSingleFile = files.length === 1;
     const sourceFile = files[0]?.file;
-    const bundleName = isSingleFile ? sourceFile.name : buildBundleName();
+    const bundleName = isSingleFile && sourceFile ? sourceFile.name : buildBundleName();
     const uploadKey = buildUploadKey(email, bundleName);
 
     try {
@@ -259,7 +262,7 @@ export const registerFileRoutes = (app: Hono): void => {
       }
 
       c.header("Content-Type", object.httpMetadata?.contentType || "application/octet-stream");
-      c.header("Content-Disposition", `attachment; filename=\"${filename}\"`);
+      c.header("Content-Disposition", `attachment; filename="${filename}"`);
       if (expiresAt) {
         c.header("X-Expires-At", expiresAt);
       }

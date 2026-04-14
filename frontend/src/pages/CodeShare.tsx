@@ -27,14 +27,13 @@ const CodeShare: React.FC = () => {
 
     return 'txt';
   };
-  
 
   useEffect(() => {
     if (codeFile) {
       setCodeFileName(codeFile);
       setCodeLanguage(extensionToLanguage(codeFile));
     } else {
-      setCodeFileName('untitled.txt');
+      setCodeFileName('mintcode00');
       setCodeLanguage('txt');
     }
 

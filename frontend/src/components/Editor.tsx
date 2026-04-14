@@ -72,7 +72,6 @@ const Editor: React.FC = () => {
   const setCode = useSetRecoilState(codeValueAtom);
   const [editorValue, setEditorValue] = useState<string>("");
   const [languageExtension, setLanguageExtension] = useState<Extension | null>(null);
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const isLoadedRef = useRef(false);
   const dirtyRef = useRef(false);
   const lastSavedValueRef = useRef<string>("");
@@ -109,20 +108,15 @@ const Editor: React.FC = () => {
     }
 
     saveInFlightRef.current = true;
-    setSaveState("saving");
 
     try {
       const result = await datadrop(filename, value, fileTypeChecker(language, "filetype"));
       if (result.ok) {
         lastSavedValueRef.current = value;
         dirtyRef.current = false;
-        setSaveState("saved");
-      } else {
-        setSaveState("error");
       }
     } catch (error) {
       console.error("Autosave failed:", error);
-      setSaveState("error");
     } finally {
       saveInFlightRef.current = false;
     }
@@ -192,7 +186,6 @@ const Editor: React.FC = () => {
         }
         isLoadedRef.current = true;
         dirtyRef.current = false;
-        setSaveState("idle");
       } catch (error) {
         console.error("Error fetching code:", error);
       }
@@ -246,7 +239,6 @@ const Editor: React.FC = () => {
           latestValueRef.current = value;
           setCode(value);
           dirtyRef.current = true;
-          setSaveState("idle");
         }}
         style={{ height: "100%", fontSize: "14px", backgroundColor: "#1e1e1e" }}
       />

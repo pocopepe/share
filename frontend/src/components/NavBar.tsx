@@ -35,6 +35,11 @@ const removeKnownExtension = (name: string): string => {
     return name;
 };
 
+const buildFinalFilename = (baseName: string, extension: string): string => {
+    const safeBaseName = baseName.trim() || "untitled";
+    return `${safeBaseName}${extension}`;
+};
+
 const NavBar: React.FC = () => {
     const [isAlertVisible] = useRecoilState(isAlertVisibleAtom);
     const [filename, setFilename] = useRecoilState(codeFileNameAtom);
@@ -51,8 +56,7 @@ const NavBar: React.FC = () => {
     }, [filename]);
 
     const commitFilename = () => {
-        const baseName = draftBaseName.trim();
-        const nextValue = `${baseName || "untitled"}${selectedExtension}`;
+        const nextValue = buildFinalFilename(draftBaseName, selectedExtension);
 
         if (nextValue === filename) {
             setDraftBaseName(removeKnownExtension(filename));
@@ -64,14 +68,13 @@ const NavBar: React.FC = () => {
 
     const handleExtensionChange = (value: string) => {
         const nextLanguage = EXTENSION_TO_LANGUAGE[value] ?? "txt";
-        const baseName = draftBaseName.trim() || "untitled";
 
         setLanguage(nextLanguage);
-        setFilename(`${baseName}${value}`);
+        setFilename(buildFinalFilename(draftBaseName, value));
     };
 
     return (
-        <nav className="relative z-20 h-[84px] bg-transparent">
+        <nav className="sticky top-0 z-30 h-[84px] bg-slate-950/30 backdrop-blur-md">
             <div className="flex h-full items-center gap-4 px-4 md:px-6">
                 <Link to='/home'>
                     <h1 className="text-xl font-bold tracking-wide text-white">Share</h1>
@@ -99,7 +102,7 @@ const NavBar: React.FC = () => {
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        className="h-10 rounded-full border-white/10 bg-white/5 px-4 text-sm text-zinc-100 shadow-sm backdrop-blur transition-colors hover:border-white/20 hover:bg-white/10"
+                                        className="h-10 rounded-full border-white/10 bg-white/5 px-4 text-sm text-zinc-100 shadow-sm backdrop-blur transition-colors hover:border-white/25 hover:bg-white/15 hover:text-white focus-visible:ring-white/30"
                                     >
                                         {selectedExtension}
                                     </Button>
