@@ -23,7 +23,7 @@ export default defineConfig({
     registerType: 'autoUpdate',
     includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
     workbox: {
-      maximumFileSizeToCacheInBytes: 5000000, // Set max file size to cache in bytes (3MB)
+      maximumFileSizeToCacheInBytes: 2000000,
     },
     manifest: {
       name: 'Vite PWA Project',
@@ -55,6 +55,46 @@ export default defineConfig({
       ],
     }, 
   })],
+  build: {
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes("@codemirror/lang-javascript")) {
+            return "editor-js";
+          }
+          if (id.includes("@codemirror/lang-python")) {
+            return "editor-py";
+          }
+          if (id.includes("@codemirror/lang-html")) {
+            return "editor-html";
+          }
+          if (id.includes("@lezer/javascript")) {
+            return "editor-js";
+          }
+          if (id.includes("@lezer/python")) {
+            return "editor-py";
+          }
+          if (id.includes("@lezer/html")) {
+            return "editor-html";
+          }
+          if (id.includes("@uiw/react-codemirror") || id.includes("@codemirror") || id.includes("@lezer")) {
+            return "editor-core";
+          }
+          if (id.includes("react") || id.includes("recoil") || id.includes("react-router-dom")) {
+            return "react-vendor";
+          }
+          if (id.includes("@radix-ui") || id.includes("lucide-react")) {
+            return "ui-vendor";
+          }
+          if (id.includes("tsparticles") || id.includes("@tsparticles")) {
+            return "particles";
+          }
+          return undefined;
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

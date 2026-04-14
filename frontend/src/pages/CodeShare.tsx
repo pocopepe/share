@@ -1,8 +1,9 @@
-import MonacoEditor from '@/components/Editor';
+import { Suspense, lazy, useEffect } from 'react';
 import { codeFileNameAtom } from '@/recoil/code';
-import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import {useSetRecoilState } from 'recoil';
+
+const MonacoEditor = lazy(() => import('@/components/Editor'));
 
 const CodeShare: React.FC = () => {
   const { codeFile } = useParams<{ codeFile: string }>();
@@ -24,7 +25,9 @@ const CodeShare: React.FC = () => {
   return (
     <div className="flex flex-col h-screen bg-slate-700">
       <div className="flex-grow">
-        <MonacoEditor />
+        <Suspense fallback={<div className="h-full w-full flex items-center justify-center text-white">Loading editor...</div>}>
+          <MonacoEditor />
+        </Suspense>
       </div>
     </div>
   );

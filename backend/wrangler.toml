@@ -1,0 +1,14 @@
+name = "share-backend"
+main = "src/index.ts"
+compatibility_date = "2024-09-25"
+
+[vars]
+LOGIN_PASSWORD = ""
+AUTH_TOKEN_SECRET = ""
+
+[[r2_buckets]]
+binding = "MY_BUCKET"
+bucket_name = "share"
+
+[triggers]
+crons = ["0 */6 * * *"]

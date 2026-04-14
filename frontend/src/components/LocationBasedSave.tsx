@@ -23,9 +23,11 @@ const LocationBasedSaveButton = () => {
     setIsAlertVisible('1');
 
     const result = await datadrop(filename, code, fileTypeChecker(language, "filetype"));
-    console.log(result); 
-    if (result === "success") {
+    console.log(result);
+    if (result.ok) {
       showAlert();
+    } else {
+      setIsAlertVisible('0');
     }
   };
   const setIsAlertVisible=useSetRecoilState(isAlertVisibleAtom);

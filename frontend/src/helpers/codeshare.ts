@@ -1,6 +1,6 @@
+import { codeShareApi } from "@/helpers/api";
 
-function exampleFunction(param: string): string {
-    return `Hello, ${param}!`;
-}
+const fetchCodeShare = async (filename: string): Promise<{ content: string; contentType: string }> =>
+    codeShareApi.get(filename);
 
-export { exampleFunction };
+export default fetchCodeShare;
