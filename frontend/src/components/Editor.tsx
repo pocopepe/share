@@ -1,19 +1,74 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { acceptCompletion, autocompletion } from "@codemirror/autocomplete";
-import { indentWithTab } from "@codemirror/commands";
-import { oneDark } from "@codemirror/theme-one-dark";
-import type { Extension } from "@codemirror/state";
-import { keymap } from "@codemirror/view";
+import { indentLess, indentMore } from "@codemirror/commands";
+import { Prec, type Extension } from "@codemirror/state";
+import { EditorView, keymap } from "@codemirror/view";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { codeFileNameAtom, codeLanguageAtom, codeValueAtom } from "@/recoil/code";
+import { autosaveEnabledAtom, codeFileNameAtom, codeLanguageAtom, codeValueAtom } from "@/recoil/code";
 import fetchCodeShare from "@/helpers/codeshare";
 import datadrop from "@/helpers/datadrop";
 import fileTypeChecker from "@/helpers/filetypechecker";
 
+const editorTheme = EditorView.theme(
+  {
+    "&": {
+      backgroundColor: "#1e1e1e",
+      color: "#d4d4d4",
+      height: "100%",
+    },
+    ".cm-editor": {
+      backgroundColor: "#1e1e1e",
+      color: "#d4d4d4",
+      height: "100%",
+    },
+    ".cm-scroller": {
+      backgroundColor: "#1e1e1e",
+      fontFamily: "inherit",
+    },
+    ".cm-content": {
+      caretColor: "#d4d4d4",
+      backgroundColor: "#1e1e1e",
+    },
+    ".cm-cursor, .cm-dropCursor": {
+      borderLeftColor: "#d4d4d4",
+    },
+    ".cm-gutters": {
+      backgroundColor: "#252526",
+      color: "#858585",
+      border: "none",
+    },
+    ".cm-activeLine": {
+      backgroundColor: "#2a2d2e",
+    },
+    "&.cm-focused .cm-selectionBackground": {
+      backgroundColor: "#264f78 !important",
+    },
+    ".cm-selectionBackground, .cm-selectionLayer .cm-selectionBackground, .cm-content ::selection, .cm-line::selection, .cm-line > span::selection": {
+      backgroundColor: "#264f78 !important",
+      color: "#ffffff",
+    },
+    ".cm-panels": {
+      backgroundColor: "#252526",
+      color: "#d4d4d4",
+    },
+    ".cm-tooltip": {
+      border: "1px solid #454545",
+      backgroundColor: "#252526",
+      color: "#d4d4d4",
+    },
+    ".cm-tooltip-autocomplete > ul > li[aria-selected]": {
+      backgroundColor: "#04395e",
+      color: "#d4d4d4",
+    },
+  },
+  { dark: true },
+);
+
 const Editor: React.FC = () => {
   const language = useRecoilValue(codeLanguageAtom);
   const filename = useRecoilValue(codeFileNameAtom);
+  const autosaveEnabled = useRecoilValue(autosaveEnabledAtom);
   const setCode = useSetRecoilState(codeValueAtom);
   const [editorValue, setEditorValue] = useState<string>("");
   const [languageExtension, setLanguageExtension] = useState<Extension | null>(null);
@@ -27,15 +82,19 @@ const Editor: React.FC = () => {
 
   const extensions = useMemo<Extension[]>(
     () => [
-      keymap.of([
-        {
-          key: "Tab",
-          run: acceptCompletion,
-        },
-      ]),
+      editorTheme,
+      Prec.highest(
+        keymap.of([
+          {
+            key: "Tab",
+            run: (view) => acceptCompletion(view) || indentMore(view),
+            shift: indentLess,
+            preventDefault: true,
+          },
+        ]),
+      ),
       autocompletion(),
       ...(languageExtension ? [languageExtension] : []),
-      keymap.of([indentWithTab]),
     ],
     [languageExtension],
   );
@@ -145,7 +204,7 @@ const Editor: React.FC = () => {
   }, [filename, setCode]);
 
   useEffect(() => {
-    if (!filename) {
+    if (!filename || !autosaveEnabled) {
       return;
     }
 
@@ -161,17 +220,13 @@ const Editor: React.FC = () => {
         autosaveTimerRef.current = null;
       }
     };
-  }, [filename, language]);
+  }, [filename, language, autosaveEnabled]);
 
   return (
-    <div style={{ height: "100%", width: "100%", background: "#000" }}>
-      <div className="absolute top-3 right-4 z-20 rounded-md bg-black/80 px-3 py-1 text-xs text-white border border-white/10">
-        {saveState === "saving" ? "Saving..." : saveState === "saved" ? "Saved" : saveState === "error" ? "Save failed" : "Autosave on"}
-      </div>
+    <div className="relative" style={{ height: "100%", width: "100%", background: "#1e1e1e" }}>
       <CodeMirror
         value={editorValue}
         height="100%"
-        theme={oneDark}
         extensions={extensions}
         basicSetup={{
           lineNumbers: true,
@@ -193,7 +248,7 @@ const Editor: React.FC = () => {
           dirtyRef.current = true;
           setSaveState("idle");
         }}
-        style={{ height: "100%", fontSize: "14px", backgroundColor: "#000" }}
+        style={{ height: "100%", fontSize: "14px", backgroundColor: "#1e1e1e" }}
       />
     </div>
   );

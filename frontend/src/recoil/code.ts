@@ -2,7 +2,7 @@ import { atom } from 'recoil';
 
 export const codeLanguageAtom = atom<string>({
     key: 'codeLanguageAtom',
-    default: 'python',
+    default: 'txt',
 });
 
 export const codeValueAtom = atom<string>({
@@ -13,6 +13,11 @@ export const codeValueAtom = atom<string>({
 export const codeFileNameAtom = atom<string>({
     key: "codeFileNameAtom",
     default: "",
+});
+
+export const autosaveEnabledAtom = atom<boolean>({
+    key: "autosaveEnabledAtom",
+    default: true,
 });
 
 export const isAlertVisibleAtom = atom<string>({
