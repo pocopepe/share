@@ -1,5 +1,7 @@
 # Frontend
 
+Live: https://share-frontend.pages.dev/home
+
 ## Local Setup
 
 1. Install dependencies:
